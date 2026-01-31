@@ -5,6 +5,15 @@ from .database import engine, Base
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="URL Shortener")
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # later restrict
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():

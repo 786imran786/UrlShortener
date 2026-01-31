@@ -24,7 +24,7 @@ def shorten_url(long_url: str, db: Session = Depends(get_db)):
     url.short_code = short_code
     db.commit()
 
-    return {"short_url": f"http://localhost:8000/{short_code}"}
+    return {"short_url": f"https://url-shortener-80dc.onrender.com/{short_code}"}
 
 from fastapi import HTTPException
 from fastapi.responses import RedirectResponse

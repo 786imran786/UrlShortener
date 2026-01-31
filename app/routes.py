@@ -26,15 +26,34 @@ def shorten_url(long_url: str, db: Session = Depends(get_db)):
 
     return {"short_url": f"http://localhost:8000/{short_code}"}
 
+from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
-import redis
-r = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
 @router.get("/{short_code}")
 def redirect(short_code: str, db: Session = Depends(get_db)):
-    cached = r.get(short_code)
+
+    if short_code == "favicon.ico":
+        raise HTTPException(status_code=204)
+
+    try:
+        cached = r.get(short_code)
+    except:
+        cached = None
+
     if cached:
         return RedirectResponse(cached)
 
     url = db.query(URL).filter(URL.short_code == short_code).first()
-    r.set(short_code, url.long_url)
+
+    if not url:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+
+    try:
+        r.set(short_code, url.long_url)
+    except:
+        pass
+
+    url.clicks += 1
+    db.commit()
+
+    return RedirectResponse(url.long_url)

@@ -1,14 +1,9 @@
-from fastapi import HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI
+from .routes import router
+from .database import engine, Base
 
-@router.get("/{short_code}")
-def redirect(short_code: str, db: Session = Depends(get_db)):
-    url = db.query(URL).filter(URL.short_code == short_code).first()
+Base.metadata.create_all(bind=engine)
 
-    if not url:
-        raise HTTPException(status_code=404, detail="URL not found")
+app = FastAPI(title="URL Shortener")
 
-    url.clicks += 1
-    db.commit()
-
-    return RedirectResponse(url.long_url)
+app.include_router(router)
